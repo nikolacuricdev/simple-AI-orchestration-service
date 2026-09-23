@@ -97,3 +97,16 @@ docker compose run --rm mcp-server
 ```
 
 If ports are already in use, change `WEATHER_PORT` and `AI_PORT` directly in the `.env` file.
+
+
+### ollama api docs
+`https://github.com/ollama/ollama/blob/main/docs/api.md`
+
+### ollama tool calling
+`https://github.com/ollama/ollama/blob/main/docs/capabilities/tool-calling.mdx`
+
+### ollama api types in go
+`https://github.com/ollama/ollama/blob/main/api/types.go`
+
+### go-sdk modelcontextprotocol
+`https://github.com/modelcontextprotocol/go-sdk/tree/main`
