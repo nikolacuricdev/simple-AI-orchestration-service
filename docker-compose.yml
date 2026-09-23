@@ -1,0 +1,56 @@
+services:
+
+  simple-ai-service-app:
+    build:
+      context: ./app
+    container_name: simple-ai-service-app
+
+    ports:
+      - "8088:8080"
+
+    depends_on:
+      - simple-ai-service-mcp
+      - simple-ai-service-ollama
+
+  simple-ai-service-mcp:
+    build:
+      context: ./mcp
+    container_name: simple-ai-service-mcp
+
+    expose:
+      - "8080"
+
+  simple-ai-service-ollama:
+    build:
+      context: ./ollama
+    container_name: simple-ai-service-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    command: serve
+    healthcheck:
+      test: [ "CMD", "ollama", "list" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  simple-ai-service-ollama-pull:
+    image: ollama/ollama:latest
+    container_name: simple-ai-service-ollama-pull
+    depends_on:
+      simple-ai-service-ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=simple-ai-service-ollama:11434
+    volumes:
+      - ollama-data:/root/.ollama
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: >
+      "ollama pull llama3.2"
+
+volumes:
+  ollama-data:
