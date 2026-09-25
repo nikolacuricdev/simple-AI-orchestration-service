@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b6b66"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="480" rx="12" fill="#fbfbfa"/>
+  <text x="32" y="42" font-size="19" font-weight="600" fill="#1a1a18">The import graph (actual, from <tspan font-family="ui-monospace, monospace" font-size="16">go list</tspan>)</text>
+  <text x="32" y="62" font-size="13" fill="#6b6b66">Two leaves with zero internal imports, one composition root per binary, and no cycles anywhere.</text>
+
+  <!-- column headers -->
+  <text x="110" y="104" font-size="12" font-weight="700" fill="#6b6b66" text-anchor="middle">composition roots</text>
+  <text x="420" y="104" font-size="12" font-weight="700" fill="#6b6b66" text-anchor="middle">policy</text>
+  <text x="720" y="104" font-size="12" font-weight="700" fill="#6b6b66" text-anchor="middle">adapters + domain</text>
+  <text x="930" y="104" font-size="12" font-weight="700" fill="#6b6b66" text-anchor="middle">leaves</text>
+
+  <!-- cmd/agent -->
+  <rect x="24" y="126" width="172" height="46" rx="8" fill="#eef3f9" stroke="#3b6ea5"/>
+  <text x="110" y="147" font-size="12.5" font-weight="700" fill="#2c5580" text-anchor="middle">cmd/agent</text>
+  <text x="110" y="163" font-size="10.5" fill="#6b6b66" text-anchor="middle">wiring only, no logic</text>
+
+  <!-- cmd/mcp-server -->
+  <rect x="24" y="316" width="172" height="46" rx="8" fill="#ecf5f1" stroke="#2e7d5b"/>
+  <text x="110" y="337" font-size="12.5" font-weight="700" fill="#256349" text-anchor="middle">cmd/mcp-server</text>
+  <text x="110" y="353" font-size="10.5" fill="#6b6b66" text-anchor="middle">wiring only, no logic</text>
+
+  <!-- internal/api -->
+  <rect x="330" y="126" width="180" height="42" rx="8" fill="#ffffff" stroke="#cfcfc9"/>
+  <text x="420" y="152" font-size="12.5" font-weight="600" fill="#1a1a18" text-anchor="middle">internal/api</text>
+
+  <!-- internal/agent -->
+  <rect x="330" y="196" width="180" height="56" rx="8" fill="#eef3f9" stroke="#3b6ea5" stroke-width="2"/>
+  <text x="420" y="219" font-size="12.5" font-weight="700" fill="#2c5580" text-anchor="middle">internal/agent</text>
+  <text x="420" y="237" font-size="10.5" fill="#6b6b66" text-anchor="middle">the loop + its two interfaces</text>
+
+  <!-- internal/mcpserver -->
+  <rect x="330" y="316" width="180" height="42" rx="8" fill="#ecf5f1" stroke="#2e7d5b"/>
+  <text x="420" y="342" font-size="12.5" font-weight="600" fill="#256349" text-anchor="middle">internal/mcpserver</text>
+
+  <!-- internal/ollama -->
+  <rect x="630" y="196" width="180" height="42" rx="8" fill="#fbf1e8" stroke="#a35b2e"/>
+  <text x="720" y="222" font-size="12.5" font-weight="600" fill="#8a4d26" text-anchor="middle">internal/ollama</text>
+
+  <!-- internal/weather -->
+  <rect x="630" y="316" width="180" height="42" rx="8" fill="#ffffff" stroke="#cfcfc9"/>
+  <text x="720" y="342" font-size="12.5" font-weight="600" fill="#1a1a18" text-anchor="middle">internal/weather</text>
+
+  <!-- shared -->
+  <rect x="630" y="398" width="180" height="42" rx="8" fill="#f2f2ef" stroke="#cfcfc9"/>
+  <text x="720" y="424" font-size="12.5" font-weight="600" fill="#1a1a18" text-anchor="middle">internal/config, httpx</text>
+
+  <!-- leaves marker -->
+  <rect x="860" y="186" width="120" height="182" rx="8" fill="none" stroke="#cfcfc9" stroke-dasharray="5 4"/>
+  <text x="920" y="262" font-size="11" fill="#6b6b66" text-anchor="middle">stdlib only</text>
+  <text x="920" y="280" font-size="11" fill="#6b6b66" text-anchor="middle">(+ the MCP</text>
+  <text x="920" y="296" font-size="11" fill="#6b6b66" text-anchor="middle">SDK where</text>
+  <text x="920" y="312" font-size="11" fill="#6b6b66" text-anchor="middle">it is spoken)</text>
+
+  <!-- arrows -->
+  <path d="M196,143 L326,143" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M196,158 L260,158 L260,220 L326,220" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M196,166 L236,166 L236,412 L626,412" fill="none" stroke="#cfcfc9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M196,136 L216,136 L216,80 L880,80 L880,196 L810,196" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <path d="M420,168 L420,192" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M510,217 L626,217" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <path d="M196,333 L326,333" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M196,352 L260,352 L260,420 L626,420" fill="none" stroke="#cfcfc9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M510,337 L626,337" fill="none" stroke="#6b6b66" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <text x="560" y="210" font-size="10.5" fill="#6b6b66" text-anchor="middle">types</text>
+  <text x="560" y="330" font-size="10.5" fill="#6b6b66" text-anchor="middle">domain</text>
+
+  <text x="32" y="464" font-size="12" fill="#6b6b66">Note the arrow that is missing: <tspan font-family="ui-monospace, monospace">internal/agent</tspan> never imports <tspan font-family="ui-monospace, monospace">internal/api</tspan>, and <tspan font-family="ui-monospace, monospace">cmd/mcp-server</tspan> imports nothing AI-related at all.</text>
+</svg>

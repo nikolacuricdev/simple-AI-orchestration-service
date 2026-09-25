@@ -1,6 +1,6 @@
-module simple-ai-service/app
+module github.com/nikolacuricdev/simple-AI-orchestration-service
 
-go 1.26.6
+go 1.26.0
 
 require github.com/modelcontextprotocol/go-sdk v1.8.0
 

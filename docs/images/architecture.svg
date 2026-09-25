@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="1000" height="440" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b6b66"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="440" rx="12" fill="#fbfbfa"/>
+  <text x="32" y="42" font-size="19" font-weight="600" fill="#1a1a18">Three processes, three responsibilities</text>
+  <text x="32" y="62" font-size="13" fill="#6b6b66">The agent owns the loop. It owns neither the tools nor the model.</text>
+
+  <!-- client -->
+  <rect x="16" y="195" width="100" height="60" rx="8" fill="#ffffff" stroke="#cfcfc9"/>
+  <text x="66" y="220" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">HTTP</text>
+  <text x="66" y="238" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">client</text>
+
+  <!-- agent process -->
+  <rect x="200" y="70" width="280" height="310" rx="10" fill="#eef3f9" stroke="#3b6ea5"/>
+  <text x="222" y="92" font-size="14" font-weight="700" fill="#2c5580">agent process</text>
+  <text x="458" y="92" font-size="11" fill="#6b6b66" text-anchor="end">cmd/agent</text>
+
+  <rect x="222" y="104" width="236" height="48" rx="7" fill="#ffffff" stroke="#b9cbe0"/>
+  <text x="340" y="124" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">internal/api</text>
+  <text x="340" y="141" font-size="11" fill="#6b6b66" text-anchor="middle">routing, JSON, error mapping</text>
+
+  <rect x="222" y="164" width="236" height="48" rx="7" fill="#ffffff" stroke="#3b6ea5" stroke-width="2"/>
+  <text x="340" y="184" font-size="13" font-weight="700" fill="#2c5580" text-anchor="middle">internal/agent — the loop</text>
+  <text x="340" y="201" font-size="11" fill="#6b6b66" text-anchor="middle">Model + Toolset interfaces only</text>
+
+  <rect x="222" y="228" width="236" height="48" rx="7" fill="#ffffff" stroke="#b9cbe0"/>
+  <text x="340" y="248" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">MCPToolset</text>
+  <text x="340" y="265" font-size="11" fill="#6b6b66" text-anchor="middle">adapter: MCP → Toolset</text>
+
+  <rect x="222" y="292" width="236" height="48" rx="7" fill="#ffffff" stroke="#b9cbe0"/>
+  <text x="340" y="312" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">ollama.Client</text>
+  <text x="340" y="329" font-size="11" fill="#6b6b66" text-anchor="middle">adapter: HTTP → Model</text>
+
+  <!-- mcp process -->
+  <rect x="660" y="80" width="320" height="130" rx="10" fill="#ecf5f1" stroke="#2e7d5b"/>
+  <text x="682" y="102" font-size="14" font-weight="700" fill="#256349">mcp-server process</text>
+  <text x="958" y="102" font-size="11" fill="#6b6b66" text-anchor="end">cmd/mcp-server</text>
+  <rect x="682" y="118" width="276" height="70" rx="7" fill="#ffffff" stroke="#b6d6c8"/>
+  <text x="820" y="142" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">tool: get_weather</text>
+  <text x="820" y="160" font-size="11" fill="#6b6b66" text-anchor="middle">typed input, JSON Schema published</text>
+  <text x="820" y="177" font-size="11" fill="#6b6b66" text-anchor="middle">no knowledge that an LLM exists</text>
+
+  <!-- ollama process -->
+  <rect x="660" y="260" width="320" height="130" rx="10" fill="#fbf1e8" stroke="#a35b2e"/>
+  <text x="682" y="282" font-size="14" font-weight="700" fill="#8a4d26">ollama process</text>
+  <text x="958" y="282" font-size="11" fill="#6b6b66" text-anchor="end">off-the-shelf image</text>
+  <rect x="682" y="298" width="276" height="70" rx="7" fill="#ffffff" stroke="#e4c8ae"/>
+  <text x="820" y="322" font-size="13" font-weight="600" fill="#1a1a18" text-anchor="middle">llama3.2</text>
+  <text x="820" y="340" font-size="11" fill="#6b6b66" text-anchor="middle">decides whether a tool is needed</text>
+  <text x="820" y="357" font-size="11" fill="#6b6b66" text-anchor="middle">never executes one</text>
+
+  <!-- arrows -->
+  <line x1="116" y1="225" x2="196" y2="225" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="156" y="216" font-size="11" fill="#6b6b66" text-anchor="middle">POST /chat</text>
+
+  <line x1="484" y1="200" x2="656" y2="145" stroke="#2e7d5b" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="572" y="148" font-size="11" font-weight="600" fill="#256349" text-anchor="middle">MCP / JSON-RPC</text>
+  <text x="572" y="162" font-size="11" fill="#6b6b66" text-anchor="middle">over Streamable HTTP</text>
+
+  <line x1="484" y1="300" x2="656" y2="328" stroke="#a35b2e" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="572" y="292" font-size="11" font-weight="600" fill="#8a4d26" text-anchor="middle">HTTP POST</text>
+  <text x="572" y="306" font-size="11" fill="#6b6b66" text-anchor="middle">/api/chat</text>
+</svg>

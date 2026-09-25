@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b6b66"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="480" rx="12" fill="#fbfbfa"/>
+  <text x="32" y="42" font-size="19" font-weight="600" fill="#1a1a18">One Go struct tag, all the way to the model and back</text>
+  <text x="32" y="62" font-size="13" fill="#6b6b66">Nothing is hand-written twice, so the tool description can never drift from the tool.</text>
+
+  <!-- outbound row -->
+  <text x="32" y="102" font-size="12" font-weight="700" fill="#2e7d5b">DESCRIBE  →</text>
+
+  <rect x="32" y="114" width="212" height="86" rx="8" fill="#ecf5f1" stroke="#2e7d5b"/>
+  <text x="48" y="136" font-size="11" font-weight="700" fill="#256349">1. Go type</text>
+  <text x="48" y="156" font-size="10.5" font-family="ui-monospace, monospace" fill="#1a1a18">type WeatherInput struct {</text>
+  <text x="48" y="171" font-size="10.5" font-family="ui-monospace, monospace" fill="#1a1a18">  City string `jsonschema:</text>
+  <text x="48" y="186" font-size="10.5" font-family="ui-monospace, monospace" fill="#1a1a18">    "name of the city…"`}</text>
+
+  <line x1="248" y1="157" x2="288" y2="157" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="292" y="114" width="196" height="86" rx="8" fill="#ffffff" stroke="#cfcfc9"/>
+  <text x="308" y="136" font-size="11" font-weight="700" fill="#1a1a18">2. mcp.AddTool</text>
+  <text x="308" y="156" font-size="11" fill="#6b6b66">reflects the generic</text>
+  <text x="308" y="172" font-size="11" fill="#6b6b66">parameters into a</text>
+  <text x="308" y="188" font-size="11" font-weight="600" fill="#1a1a18">JSON Schema</text>
+
+  <line x1="492" y1="157" x2="532" y2="157" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="536" y="114" width="196" height="86" rx="8" fill="#ffffff" stroke="#cfcfc9"/>
+  <text x="552" y="136" font-size="11" font-weight="700" fill="#1a1a18">3. MCP tools/list</text>
+  <text x="552" y="156" font-size="11" fill="#6b6b66">the schema crosses a</text>
+  <text x="552" y="172" font-size="11" fill="#6b6b66">process boundary —</text>
+  <text x="552" y="188" font-size="11" fill="#6b6b66">unchanged</text>
+
+  <line x1="736" y1="157" x2="776" y2="157" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="780" y="114" width="188" height="86" rx="8" fill="#fbf1e8" stroke="#a35b2e"/>
+  <text x="796" y="136" font-size="11" font-weight="700" fill="#8a4d26">4. the model</text>
+  <text x="796" y="156" font-size="11" fill="#6b6b66">reads name, description</text>
+  <text x="796" y="172" font-size="11" fill="#6b6b66">and schema, and decides</text>
+  <text x="796" y="188" font-size="11" fill="#6b6b66">whether to call it</text>
+
+  <!-- connector down -->
+  <path d="M874,204 L874,232 L500,232 L500,256" fill="none" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- inbound row -->
+  <text x="32" y="292" font-size="12" font-weight="700" fill="#a35b2e">←  EXECUTE</text>
+
+  <rect x="780" y="260" width="188" height="86" rx="8" fill="#fbf1e8" stroke="#a35b2e"/>
+  <text x="796" y="282" font-size="11" font-weight="700" fill="#8a4d26">5. tool_calls</text>
+  <text x="796" y="302" font-size="10.5" font-family="ui-monospace, monospace" fill="#1a1a18">{"name":"get_weather",</text>
+  <text x="796" y="317" font-size="10.5" font-family="ui-monospace, monospace" fill="#1a1a18"> "arguments":</text>
+  <text x="796" y="332" font-size="10.5" font-family="ui-monospace, monospace" fill="#1a1a18">   {"city":"Belgrade"}}</text>
+
+  <line x1="776" y1="303" x2="736" y2="303" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="536" y="260" width="196" height="86" rx="8" fill="#ffffff" stroke="#cfcfc9"/>
+  <text x="552" y="282" font-size="11" font-weight="700" fill="#1a1a18">6. MCP tools/call</text>
+  <text x="552" y="302" font-size="11" fill="#6b6b66">arguments travel back</text>
+  <text x="552" y="318" font-size="11" fill="#6b6b66">as an untyped map —</text>
+  <text x="552" y="334" font-size="11" font-style="italic" fill="#8c3232">the model invented them</text>
+
+  <line x1="532" y1="303" x2="492" y2="303" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="292" y="260" width="196" height="86" rx="8" fill="#ecf5f1" stroke="#2e7d5b"/>
+  <text x="308" y="282" font-size="11" font-weight="700" fill="#256349">7. SDK decodes</text>
+  <text x="308" y="302" font-size="11" fill="#6b6b66">validates against the</text>
+  <text x="308" y="318" font-size="11" fill="#6b6b66">schema and hands the</text>
+  <text x="308" y="334" font-size="11" font-weight="600" fill="#1a1a18">handler a WeatherInput</text>
+
+  <line x1="288" y1="303" x2="248" y2="303" stroke="#6b6b66" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="32" y="260" width="212" height="86" rx="8" fill="#ecf5f1" stroke="#2e7d5b"/>
+  <text x="48" y="282" font-size="11" font-weight="700" fill="#256349">8. your business logic</text>
+  <text x="48" y="302" font-size="11" fill="#6b6b66">plain Go, typed input,</text>
+  <text x="48" y="318" font-size="11" fill="#6b6b66">ordinary errors — no</text>
+  <text x="48" y="334" font-size="11" fill="#6b6b66">prompt anywhere in sight</text>
+
+  <rect x="32" y="380" width="936" height="66" rx="8" fill="#fff8e8" stroke="#b8902e"/>
+  <text x="52" y="404" font-size="12" font-weight="700" fill="#8a6a1f">The boundary that matters</text>
+  <text x="52" y="424" font-size="12" fill="#1a1a18">Steps 1–4 are a contract you publish. Steps 5–8 are input you validate. The model sits on the untrusted side of that line,</text>
+  <text x="52" y="440" font-size="12" fill="#1a1a18">so its arguments get the same scepticism as a query string from the open internet.</text>
+</svg>

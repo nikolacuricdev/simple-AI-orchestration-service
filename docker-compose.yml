@@ -1,56 +1,75 @@
+# Three services, matching the three roles in the README:
+#   ollama      the model
+#   mcp-server  the tools
+#   agent       the loop that connects them
+name: simple-ai-orchestration
+
 services:
 
-  simple-ai-service-app:
+  agent:
     build:
-      context: ./app
-    container_name: simple-ai-service-app
-
+      context: .
+      dockerfile: build/Dockerfile
+      args:
+        BINARY: agent
     ports:
-      - "8088:8080"
-
+      - "${AGENT_PORT:-8080}:8080"
+    environment:
+      AGENT_ADDR: ":8080"
+      # Service names, not localhost: each container has its own loopback.
+      OLLAMA_URL: "http://ollama:11434"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2}"
+      MCP_URL: "http://mcp-server:8081/mcp"
+      AGENT_MAX_STEPS: "${AGENT_MAX_STEPS:-5}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
     depends_on:
-      - simple-ai-service-mcp
-      - simple-ai-service-ollama
+      mcp-server:
+        condition: service_started
+      ollama-pull:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
-  simple-ai-service-mcp:
+  mcp-server:
     build:
-      context: ./mcp
-    container_name: simple-ai-service-mcp
-
+      context: .
+      dockerfile: build/Dockerfile
+      args:
+        BINARY: mcp-server
+    environment:
+      MCP_ADDR: ":8081"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+    # Not published: the tool server is reachable only from inside the network.
     expose:
-      - "8080"
+      - "8081"
+    restart: unless-stopped
 
-  simple-ai-service-ollama:
-    build:
-      context: ./ollama
-    container_name: simple-ai-service-ollama
+  ollama:
+    image: ollama/ollama:latest
     ports:
-      - "11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama-data:/root/.ollama
-    environment:
-      - OLLAMA_HOST=0.0.0.0:11434
-    command: serve
     healthcheck:
-      test: [ "CMD", "ollama", "list" ]
+      test: ["CMD", "ollama", "list"]
       interval: 5s
       timeout: 5s
       retries: 30
       start_period: 10s
+    restart: unless-stopped
 
-  simple-ai-service-ollama-pull:
+  # A one-shot job, not a service: it pulls the model and exits. The agent
+  # waits for it to succeed, so the first request never hits a missing model.
+  ollama-pull:
     image: ollama/ollama:latest
-    container_name: simple-ai-service-ollama-pull
     depends_on:
-      simple-ai-service-ollama:
+      ollama:
         condition: service_healthy
     environment:
-      - OLLAMA_HOST=simple-ai-service-ollama:11434
+      OLLAMA_HOST: "ollama:11434"
     volumes:
       - ollama-data:/root/.ollama
-    entrypoint: [ "/bin/sh", "-c" ]
-    command: >
-      "ollama pull llama3.2"
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["ollama pull ${OLLAMA_MODEL:-llama3.2}"]
 
 volumes:
   ollama-data:

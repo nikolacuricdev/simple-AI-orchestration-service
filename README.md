@@ -1,112 +1,155 @@
-# Weather AI orchestration service
+# Simple AI orchestration service
 
-A minimal Go project that shows how to wire a local LLM (via [Ollama](https://ollama.com)) to a tool it can call. Built with the Go standard library only — no web framework, no ORM, nothing to learn beyond `net/http`.
+A minimal, runnable example of the four things every LLM integration needs:
 
-## How it works
+1. **Talking to a model** — `internal/ollama`
+2. **Describing tools to it** — `internal/mcpserver`
+3. **Discovering and calling those tools over MCP** — `internal/agent/mcptools.go`
+4. **The agent loop that ties them together** — `internal/agent/agent.go`
 
-There are three small, independent pieces, all built from the same binary:
+Go standard library plus the official [MCP Go SDK](https://github.com/modelcontextprotocol/go-sdk). No framework, no ORM, no magic. The demo tool returns fake weather, because the point is the orchestration, not the forecast.
 
-1. **Weather API** (`internal/weather`) — a plain HTTP endpoint that returns a random demo forecast for a European city. Fake data on purpose: this project is about orchestration, not real weather.
-2. **AI gateway** (`internal/ai`) — sends your prompt to a local Ollama model together with a `get_weather` tool description. If the model decides it needs the weather, the gateway calls the weather API for it and sends the result back to the model.
-3. **MCP server** (`internal/mcp`) — exposes the same weather lookup as an [MCP](https://modelcontextprotocol.io) tool over stdio, so any MCP-compatible client (not just this project's own AI gateway) can call it.
+> **📖 [Building an AI Agent in Go: Tool Orchestration with MCP and a Local LLM](docs/building-an-ai-agent-in-go.md)** — the illustrated, step-by-step walkthrough of how and why this is built the way it is. Start there if you came to learn rather than to run.
+
+## The agent loop
+
+Everything else in this repo exists to serve these thirty lines ([`internal/agent/agent.go`](internal/agent/agent.go)):
 
 ```text
-cmd/weather-service/
-  main.go       entrypoint: reads the CLI argument and dispatches to one of the three run modes below
-  weather.go    runWeatherAPI() — serves the weather HTTP API (default mode)
-  model.go      runModel()      — serves the AI gateway (browser chat + /chat)
-  mcp.go        runMCP()        — runs the MCP stdio server
-
-internal/weather/
-  weather.go        Forecast type, the Provider interface, and the demo forecast generator
-  (weather_test.go)
-
-internal/ai/
-  client.go          Client: talks to Ollama's /api/chat, runs the tool-call loop
-  tool.go            get_weather tool description and its execution
-  system_prompt.md   the system prompt, kept as text rather than a Go string
-  (ai_test.go)
-
-internal/httpserver/
-  weather.go     GET /weather
-  chat.go        GET / (chat page), GET /health, POST /chat
-  httpserver.go  shared helpers: JSON responses, logging/recovery middleware
-  chat.html      the browser chat page
-  (httpserver_test.go)
-
-internal/mcp/
-  mcp.go   the MCP server and its get_weather tool
-  (mcp_test.go)
+                 ┌──────────────────────────────────────────┐
+                 │                                          │
+                 ▼                                          │
+ system + user ──► ask the model ──► tool calls? ──no──► final answer
+    prompt                               │
+                                        yes
+                                         │
+                                         ▼
+                                  run each tool,
+                                  append its output ────────┘
+                                  as a "tool" message
 ```
 
-Each package is one clear unit — weather domain, AI gateway, HTTP layer, MCP server — and within each package, one file per concern instead of one big file.
+The parts that are easy to get wrong, and are called out in the code:
 
-## Run locally
+| Concern | What this repo does |
+|---|---|
+| Runaway loops | Bounded by `WithMaxSteps`; returns `ErrStepLimit` instead of spinning |
+| Tool failures | Fed back to the model as a tool result, so it can retry or explain — not turned into a 500 |
+| Multiple tool calls per turn | Each result carries `tool_name`, so the model can match results to calls |
+| Cancellation | `r.Context()` flows into the model call and the MCP call; a disconnecting client unwinds everything |
+| Testability | The loop depends on the `Model` and `Toolset` interfaces only, so `internal/agent/agent_test.go` tests it with no model and no network |
+
+## Layout
+
+```text
+cmd/agent/          wiring: config, wait for dependencies, build the agent, serve HTTP
+cmd/mcp-server/     wiring: build the MCP server, serve HTTP
+
+internal/agent/
+  agent.go          the agent loop, plus the Model and Toolset interfaces it needs
+  mcptools.go       MCP  ->  Toolset adapter: the whole MCP/model integration
+
+internal/ollama/    the model client: Message, ToolCall, Tool, and one Chat call
+internal/mcpserver/ the MCP server and its get_weather tool definition
+internal/weather/   the tool's domain logic (fake data, real error path)
+internal/api/       HTTP surface: POST /chat, GET /chat?prompt=, GET /healthz
+internal/config/    environment configuration and the logger
+internal/httpx/     shared server boilerplate: timeouts, graceful shutdown, startup retry
+```
+
+Two binaries, one module. The MCP server is a **separate process** on purpose: that is MCP's whole point — a tool server that no model client owns. `cmd/mcp-server` does not import anything AI-related.
+
+## Run with Docker
 
 ```bash
-go run ./cmd/weather-service
-curl 'http://localhost:8080/weather?city=Belgrade'
-```
-
-The supported cities are common European cities.
-
-## MCP weather tool
-
-Run the MCP server as a stdio process. It exposes one typed tool, `get_weather`, implemented with `github.com/modelcontextprotocol/go-sdk/mcp`:
-
-```bash
-go run ./cmd/weather-service mcp
-```
-
-MCP does not contain any model logic — it's just a way to expose the weather lookup as a tool to any MCP client. The browser AI agent below is the component that decides *when* to call it.
-
-## Docker
-
-Set the ports and local model in the `.env` file (copy from `.env.example`):
-
-```env
-WEATHER_PORT=8080
-AI_PORT=8081
-LOCAL_MODEL=llama3.2:1b
-```
-
-After updating the `.env` file, start the stack:
-
-```bash
+cp .env.example .env     # optional: change the port or the model
 docker compose up --build
 ```
 
-On the first run, it downloads the local model (`llama3.2:1b` by default, configurable with `LOCAL_MODEL`). The weather API is available at `http://localhost:8080/weather?city=Paris`, and the browser chat is available at `http://localhost:8081`.
-
-The AI gateway and Ollama communicate over the Compose network. Model data is kept in the `ollama-data` volume.
-
-Prompt from the terminal:
+The first run pulls the model (~2 GB for `llama3.2`), which takes a few minutes. The agent waits for the pull to finish before it starts serving.
 
 ```bash
-curl -s http://localhost:8081/chat \
-	-H 'Content-Type: application/json' \
-	-d '{"prompt":"What is the weather in Belgrade?"}'
+curl -s localhost:8080/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"What is the weather in Belgrade?"}' | jq
 ```
 
-Or open `http://localhost:8081` in a browser and enter the prompt in the chat form. The model autonomously decides whether to call `get_weather` for a European city, answer the capital of a European country, or reject unrelated topics.
+```json
+{
+  "answer": "It is 24°C and sunny in Belgrade.",
+  "steps": 2,
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "get_weather",
+      "args": { "city": "Belgrade" },
+      "result": "{\"city\":\"Belgrade\",\"temperature_c\":24,\"condition\":\"sunny\"}"
+    }
+  ]
+}
+```
 
-To run the MCP process interactively through Compose:
+The `tool_calls` trace is in the response deliberately: it shows the model deciding to call the tool, rather than just the sentence it produced afterwards.
+
+Ask about a city the tool does not know and you can watch the recovery path — the tool fails, the error goes back to the model, and the model answers anyway:
 
 ```bash
-docker compose run --rm mcp-server
+curl -s 'localhost:8080/chat?prompt=weather in Atlantis' | jq
 ```
 
-If ports are already in use, change `WEATHER_PORT` and `AI_PORT` directly in the `.env` file.
+## Run without Docker
 
+You need [Ollama](https://ollama.com) running locally and the model pulled:
 
-### ollama api docs
-`https://github.com/ollama/ollama/blob/main/docs/api.md`
+```bash
+ollama serve &
+ollama pull llama3.2
 
-### ollama tool calling
-`https://github.com/ollama/ollama/blob/main/docs/capabilities/tool-calling.mdx`
+make run-mcp     # terminal 1 — tool server on :8081
+make run-agent   # terminal 2 — agent on :8080
+```
 
-### ollama api types in go
-`https://github.com/ollama/ollama/blob/main/api/types.go`
+## Test
 
-### go-sdk modelcontextprotocol
-`https://github.com/modelcontextprotocol/go-sdk/tree/main`
+```bash
+make test
+```
+
+The tests use fakes and an in-memory MCP transport, so they need neither Docker nor a model.
+
+## Configuration
+
+Every setting is an environment variable with a working default.
+
+| Variable | Default | Used by |
+|---|---|---|
+| `AGENT_ADDR` | `:8080` | agent |
+| `OLLAMA_URL` | `http://localhost:11434` | agent |
+| `OLLAMA_MODEL` | `llama3.2` | agent |
+| `OLLAMA_TIMEOUT` | `120s` | agent |
+| `MCP_URL` | `http://localhost:8081/mcp` | agent |
+| `AGENT_MAX_STEPS` | `5` | agent |
+| `AGENT_REQUEST_TIMEOUT` | `5m` | agent |
+| `STARTUP_RETRIES` | `30` | agent |
+| `STARTUP_RETRY_DELAY` | `2s` | agent |
+| `MCP_ADDR` | `:8081` | mcp-server |
+| `LOG_LEVEL` | `info` | both |
+
+`.env` is read by Docker Compose only; the binaries read the environment directly.
+
+## Pointing another MCP client at the tool server
+
+The tool server is plain MCP over Streamable HTTP, so it is not tied to this agent. Compose keeps it on the internal network; publish the port and any MCP client can reach `http://localhost:8081/mcp`:
+
+```bash
+docker compose run --rm -p 8081:8081 mcp-server
+```
+
+## Notes on the model
+
+`llama3.2` is the default because it is small and supports tool calling. Smaller variants (`llama3.2:1b`) run faster but call tools noticeably worse — they tend to answer from memory instead of invoking `get_weather`. If the demo skips the tool, try a larger model before suspecting the code.
+
+## References
+
+- [Ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md) · [tool calling](https://github.com/ollama/ollama/blob/main/docs/capabilities/tool-calling.mdx)
+- [Model Context Protocol](https://modelcontextprotocol.io) · [Go SDK](https://github.com/modelcontextprotocol/go-sdk)
